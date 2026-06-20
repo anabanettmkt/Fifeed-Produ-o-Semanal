@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitFeed — Demandas da Semana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --lime-200: #E6FDA6;
+    --lime-ink: #1F240A;
+    --lime-300: #d4f070;
+    --pink-200: #EA91F2;
+    --pink-ink: #3D1742;
+    --pink-100: #f5d0f9;
+    --paper: #FBFCF5;
+    --white: #FFFFFF;
+    --ink-900: #15180B;
+    --ink-700: #3a3f28;
+    --ink-400: #7a8060;
+    --ink-100: #e8ead8;
+    --ink-50: #F6F7EE;
+    --orange-200: #FFD199;
+    --orange-ink: #3D1F00;
+    --red-200: #FFB3B3;
+    --red-ink: #3D0000;
+
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 26px;
+    --radius-2xl: 36px;
+    --radius-pill: 999px;
+
+    --shadow-sm: 0 1px 3px rgba(18,20,8,0.08), 0 1px 2px rgba(18,20,8,0.04);
+    --shadow-md: 0 4px 12px rgba(18,20,8,0.10), 0 2px 4px rgba(18,20,8,0.06);
+    --shadow-lg: 0 8px 24px rgba(18,20,8,0.12), 0 4px 8px rgba(18,20,8,0.06);
+
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --dur-slow: 320ms;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink-900);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink-900);
+    color: var(--paper);
+    padding: 28px 32px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-logo {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lime-200);
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  /* ── Week Switcher ── */
+  .week-switcher {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .week-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 18px;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: var(--ink-400);
+    cursor: pointer;
+    transition: all var(--dur-base);
+  }
+  .week-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--paper); }
+  .week-btn.active { background: var(--lime-200); border-color: var(--lime-200); color: var(--lime-ink); }
+  .week-btn-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .week-btn-dates { font-size: 12px; font-weight: 500; }
+
+  /* ── Layout ── */
+  .main {
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── Person Card ── */
+  .person-card {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .person-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1.5px solid var(--ink-100);
+  }
+  .person-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+  .avatar-kaua  { background: var(--lime-200); color: var(--lime-ink); }
+  .avatar-sarah { background: var(--pink-200); color: var(--pink-ink); }
+  .avatar-ana   { background: var(--orange-200); color: var(--orange-ink); }
+  .avatar-enzo  { background: var(--ink-900); color: var(--lime-200); }
+
+  .person-info h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .person-role {
+    font-size: 12px;
+    color: var(--ink-400);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .task-count {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--ink-50);
+    color: var(--ink-700);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  /* ── Day Group ── */
+  .day-group {
+    padding: 0 16px;
+  }
+  .day-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-400);
+    padding: 14px 8px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .day-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ink-100);
+  }
+
+  /* ── Task Row ── */
+  .task-row {
+    background: var(--ink-50);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow var(--dur-base);
+  }
+  .task-row:hover {
+    box-shadow: var(--shadow-sm);
+  }
+  .task-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .task-info { flex: 1; min-width: 0; }
+  .task-format {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-400);
+    margin-bottom: 3px;
+  }
+  .task-client {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .task-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    align-items: flex-start;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+  .badge-urgente  { background: var(--red-200); color: var(--red-ink); }
+  .badge-atencao  { background: var(--orange-200); color: var(--orange-ink); }
+  .badge-ok       { background: var(--lime-200); color: var(--lime-ink); }
+  .badge-off      { background: var(--ink-100); color: var(--ink-400); }
+  .badge-agendamento { background: #D6ECFF; color: #0B3A6B; }
+  .badge-delegada    { background: var(--pink-100); color: var(--pink-ink); }
+
+  /* ── Delegated from Ana ── */
+  .delegated-section {
+    margin: 0 16px 8px;
+    border: 1.5px dashed var(--pink-200);
+    border-radius: var(--radius-lg);
+    padding: 10px 10px 4px;
+    background: rgba(234,145,242,0.05);
+  }
+  .delegated-header {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--pink-ink);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .delegated-task {
+    background: rgba(234,145,242,0.08) !important;
+    border: 1px solid rgba(234,145,242,0.25);
+  }
+
+  /* ── Status Steps ── */
+  .status-steps {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .step-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--ink-100);
+    background: var(--white);
+    color: var(--ink-400);
+    cursor: pointer;
+    transition: all var(--dur-fast);
+    white-space: nowrap;
+  }
+  .step-btn.active {
+    border-color: transparent;
+    color: var(--lime-ink);
+    background: var(--lime-200);
+  }
+  .step-btn.done {
+    border-color: transparent;
+    color: var(--ink-400);
+    background: var(--ink-100);
+    text-decoration: line-through;
+  }
+  .step-btn:hover:not(.done) {
+    border-color: var(--ink-400);
+    color: var(--ink-700);
+  }
+
+  /* ── Notes ── */
+  .notes-section {
+    padding: 16px 24px 20px;
+    border-top: 1.5px solid var(--ink-100);
+    margin-top: auto;
+  }
+  .notes-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-400);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .notes-label svg { opacity: 0.5; }
+  textarea.notes-input {
+    width: 100%;
+    min-height: 72px;
+    background: var(--ink-50);
+    border: 1.5px solid var(--ink-100);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 13px;
+    color: var(--ink-900);
+    resize: vertical;
+    outline: none;
+    transition: border-color var(--dur-base);
+    line-height: 1.5;
+  }
+  textarea.notes-input::placeholder { color: var(--ink-400); }
+  textarea.notes-input:focus { border-color: var(--ink-400); background: var(--white); }
+  .notes-save-btn {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--lime-200);
+    color: var(--lime-ink);
+    cursor: pointer;
+    transition: opacity var(--dur-fast);
+  }
+  .notes-save-btn:hover { opacity: 0.85; }
+  .notes-saved {
+    font-size: 11px;
+    color: var(--ink-400);
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity var(--dur-base);
+  }
+  .notes-saved.show { opacity: 1; }
+
+  /* ── Progress Bar ── */
+  .progress-wrap {
+    padding: 0 24px 4px;
+  }
+  .progress-bar-bg {
+    height: 3px;
+    background: var(--ink-100);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--lime-200);
+    border-radius: var(--radius-pill);
+    transition: width var(--dur-slow);
+  }
+  .progress-text {
+    font-size: 11px;
+    color: var(--ink-400);
+    font-weight: 500;
+  }
+
+  /* ── Summary Bar ── */
+  .summary-bar {
+    background: var(--ink-900);
+    color: var(--paper);
+    padding: 16px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .summary-item { display: flex; flex-direction: column; gap: 2px; }
+  .summary-number {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--lime-200);
+  }
+  .summary-label { font-size: 11px; color: var(--ink-400); font-weight: 500; letter-spacing: 0.06em; }
+
+  /* ── Manager Observation ── */
+  .manager-obs-wrap {
+    padding: 20px 32px;
+    background: var(--ink-50);
+    border-bottom: 1.5px solid var(--ink-100);
+  }
+  .manager-obs-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    border: 1.5px solid var(--lime-200);
+    box-shadow: 0 0 0 4px rgba(230,253,166,0.2);
+    padding: 18px 22px 16px;
+  }
+  .manager-obs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  .manager-obs-who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .manager-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-pill);
+    background: var(--orange-200);
+    color: var(--orange-ink);
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .manager-obs-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.01em;
+  }
+  .manager-obs-sub {
+    font-size: 11px;
+    color: var(--ink-400);
+    font-weight: 500;
+    margin-top: 1px;
+  }
+  .manager-edit-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 13px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--ink-100);
+    background: var(--paper);
+    color: var(--ink-700);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all var(--dur-fast);
+    white-space: nowrap;
+  }
+  .manager-edit-btn:hover {
+    background: var(--lime-200);
+    border-color: var(--lime-200);
+    color: var(--lime-ink);
+  }
+  .manager-obs-display {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-900);
+    white-space: pre-wrap;
+    min-height: 20px;
+  }
+  .manager-obs-placeholder { color: var(--ink-400); font-style: italic; }
+  .manager-obs-form { display: flex; flex-direction: column; gap: 10px; }
+  .manager-obs-textarea {
+    width: 100%;
+    min-height: 80px;
+    background: var(--ink-50);
+    border: 1.5px solid var(--ink-100);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    color: var(--ink-900);
+    resize: vertical;
+    outline: none;
+    transition: border-color var(--dur-base);
+    line-height: 1.6;
+  }
+  .manager-obs-textarea:focus { border-color: var(--lime-200); background: var(--white); }
+  .manager-obs-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .manager-save-btn {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--lime-200);
+    color: var(--lime-ink);
+    cursor: pointer;
+    transition: opacity var(--dur-fast);
+  }
+  .manager-save-btn:hover { opacity: 0.85; }
+  .manager-cancel-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--ink-100);
+    background: transparent;
+    color: var(--ink-400);
+    cursor: pointer;
+    transition: all var(--dur-fast);
+  }
+  .manager-cancel-btn:hover { border-color: var(--ink-400); color: var(--ink-700); }
+  .manager-saved-feedback {
+    font-size: 11px;
+    color: var(--ink-400);
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity var(--dur-base);
+  }
+  .manager-saved-feedback.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .main { padding: 16px; grid-template-columns: 1fr; }
+    header { padding: 20px 16px; }
+    .manager-obs-wrap { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-logo">FitFeed</div>
+    <h1>Demandas da semana</h1>
+  </div>
+  <div class="week-switcher">
+    <button class="week-btn active" id="btn-week1" onclick="switchWeek(1)">
+      <span class="week-btn-label">Semana 1</span>
+      <span class="week-btn-dates">22 – 28 Jun</span>
+    </button>
+    <button class="week-btn" id="btn-week2" onclick="switchWeek(2)">
+      <span class="week-btn-label">Semana 2</span>
+      <span class="week-btn-dates">29 Jun – 3 Jul</span>
+    </button>
+  </div>
+</header>
+
+<div id="summary" class="summary-bar">
+  <div class="summary-item">
+    <span class="summary-number" id="total-tasks">0</span>
+    <span class="summary-label">Entregas totais</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-number" id="done-tasks">0</span>
+    <span class="summary-label">Publicadas</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-number" id="urgent-tasks">0</span>
+    <span class="summary-label">Atenção / urgente</span>
+  </div>
+</div>
+
+<!-- ── Observação da Gestora ── -->
+<div class="manager-obs-wrap">
+  <div class="manager-obs-inner">
+    <div class="manager-obs-header">
+      <div class="manager-obs-who">
+        <span class="manager-avatar">AN</span>
+        <div>
+          <div class="manager-obs-title">Observações Importantes</div>
+          <div class="manager-obs-sub">Visível para toda a equipe</div>
+        </div>
+      </div>
+      <button class="manager-edit-btn" id="manager-edit-btn" onclick="toggleManagerEdit()">
+        <i data-lucide="pencil" width="13" height="13"></i> Editar
+      </button>
+    </div>
+    <div id="manager-obs-display" class="manager-obs-display">
+      <span id="manager-obs-text" class="manager-obs-placeholder">Nenhuma observação ainda.</span>
+    </div>
+    <div id="manager-obs-form" class="manager-obs-form" style="display:none;">
+      <textarea id="manager-obs-input" class="manager-obs-textarea"
+        placeholder="Escreva aqui avisos, prioridades ou recados para a equipe..."></textarea>
+      <div class="manager-obs-actions">
+        <button class="manager-save-btn" onclick="saveManagerObs()">Salvar aviso</button>
+        <button class="manager-cancel-btn" onclick="cancelManagerEdit()">Cancelar</button>
+        <span class="manager-saved-feedback" id="manager-saved">Salvo ✓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main-grid"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const STEPS_DEFAULT = ['Briefing','Produção','Validação','Aprovado','Agendado/Publicado'];
+const STEPS_ANA     = ['Briefing','Copy','Validação Copy','Arte','Validação Arte','Aprovado','Agendado/Publicado'];
+const STEPS_ENZO    = ['Briefing','Roteiro','Validação Roteiro','Aprovado','Agendado/Publicado'];
+
+const PEOPLE = [
+  {
+    id: 'kaua',
+    name: 'Kaua',
+    role: 'Conteúdo — Editorial & Newsletter',
+    avatar: 'KA',
+    avatarClass: 'avatar-kaua',
+    steps: STEPS_DEFAULT,
+    tasks: [
+      { id:'k1',  week:1, day:'Seg 22',  format:'Matéria Editorial', client:'Fit Bar' },
+      { id:'k2',  week:1, day:'Ter 23',  format:'Matéria Editorial', client:'Drink Ponto' },
+      { id:'k3',  week:1, day:'Qua 24',  format:'Matéria Editorial', client:'Viclo Zero' },
+      { id:'k4',  week:1, day:'Qui 25',  format:'Matéria Editorial', client:'Vitafor', flag:'urgente' },
+      { id:'k10', week:1, day:'Qui 25',  format:'Matéria Editorial', client:'Vitafor · 2ª edição' },
+      { id:'k5',  week:1, day:'Sex 26',  format:'Até Doi Chamar de Publi', client:'Lost&Found' },
+      { id:'k6',  week:1, day:'Sex 26',  format:'Powered By Newsletter', client:'Drink Ponto' },
+      { id:'k9',  week:1, day:'Sex 26',  format:'Matéria Editorial', client:'Vitafor' },
+      { id:'k7',  week:1, day:'Dom 28',  format:'Até Doi Chamar de Publi', client:'Vitafor', flag:'atencao' },
+      { id:'k8',  week:1, day:'Dom 28',  format:'Matéria Editorial', client:'Vitafor', flag:'atencao' },
+      // ── Semana 2 ──
+      { id:'k20', week:2, day:'Seg 29',  format:'Matéria Editorial', client:'Salty Way' },
+      { id:'k21', week:2, day:'Sex 03',  format:'Até Doi Chamar de Publi', client:'Fit Bar' },
+      { id:'k22', week:2, day:'Sex 03',  format:'Powered By Newsletter', client:'Living' },
+    ]
+  },
+  {
+    id: 'sarah',
+    name: 'Sarah',
+    role: 'Design — Banner & Stories',
+    avatar: 'SA',
+    avatarClass: 'avatar-sarah',
+    steps: STEPS_DEFAULT,
+    tasks: [
+      { id:'s1', week:1, day:'Sex 26', format:'Banner Spot', client:'Fit Bar' },
+      { id:'s2', week:1, day:'Ter 23', format:'Stories (design)', client:'Inafit' },
+      { id:'s3', week:1, day:'Qua 24', format:'Stories (design)', client:'Yorgus / Vitalatte', flag:'urgente' },
+      { id:'s4', week:1, day:'Sex 26', format:'Stories (design)', client:'Drink Ponto' },
+      { id:'s6', week:1, day:'Qui 25', format:'Carrossel (agendamento)', client:'Drink Ponto', flag:'agendamento' },
+      { id:'s7', week:1, day:'Qui 25', format:'Stories Recap (full)', client:'Living' },
+      // ── Semana 2 ──
+      { id:'s20', week:2, day:'Sex 03', format:'Banner Spot', client:'Lost&Found' },
+      { id:'s21', week:2, day:'Sex 03', format:'Recap da Newsletter', client:'Yorgus/Vitalatte' },
+    ]
+  },
+  {
+    id: 'ana',
+    name: 'Ana',
+    role: 'Conteúdo — Estático & Carrossel',
+    avatar: 'AN',
+    avatarClass: 'avatar-ana',
+    steps: STEPS_ANA,
+    tasks: [
+      { id:'a1', week:1, day:'Seg 22', format:'Carrossel', client:'Viclo Zero' },
+      { id:'a2', week:1, day:'Seg 22', format:'Estático', client:'Salty Way' },
+      { id:'a3', week:1, day:'Ter 23', format:'Carrossel', client:'Pacto' },
+      { id:'a4', week:1, day:'Ter 23', format:'Estático', client:'Living (Quadra Pickleball)' },
+      { id:'a5', week:1, day:'Qua 24', format:'Carrossel', client:'Lost&Found' },
+      { id:'a6', week:1, day:'Qui 25', format:'Estático', client:'Vitafor' },
+      // ── Semana 2 ──
+      { id:'a20', week:2, day:'Seg 29', format:'Estático', client:'Vitafor' },
+      { id:'a21', week:2, day:'Qui 02', format:'Carrossel', client:'Vitafor' },
+    ]
+  },
+  {
+    id: 'enzo',
+    name: 'Enzo',
+    role: 'Vídeo — Brandfeed & Trending',
+    avatar: 'EN',
+    avatarClass: 'avatar-enzo',
+    steps: STEPS_ENZO,
+    tasks: [
+      { id:'e1',  week:1, day:'Seg 22', format:'Brandfeed (Vídeo)', client:'First Gum Energy' },
+      { id:'e2',  week:1, day:'Seg 22', format:'Wellness Trending', client:'— (orgânico)' },
+      { id:'e3',  week:1, day:'Ter 23', format:'Brandfeed (Vídeo)', client:'Bibi Sucos', flag:'urgente' },
+      { id:'e4',  week:1, day:'Ter 23', format:'Wellness Trending', client:'— (orgânico)' },
+      { id:'e5',  week:1, day:'Qua 24', format:'Brandfeed (Vídeo)', client:'Fit Bar' },
+      { id:'e6',  week:1, day:'Qua 24', format:'Wellness Trending', client:'— (orgânico)' },
+      { id:'e7',  week:1, day:'Qui 25', format:'Brandfeed (Vídeo)', client:'FlyHy' },
+      { id:'e8',  week:1, day:'Qui 25', format:'Wellness Trending', client:'Living (Chicago)', flag:'urgente' },
+      { id:'e9',  week:1, day:'Sex 26', format:'Vídeo Recap', client:'Semana (orgânico)' },
+      { id:'e10', week:1, day:'Sex 26', format:'Brandfeed Reels Full', client:'Living' },
+      // ── Semana 2 ──
+      { id:'e20', week:2, day:'Seg 29', format:'Brandfeed (Vídeo)', client:'Viclo Zero' },
+      { id:'e21', week:2, day:'Qua 01', format:'Brandfeed (Vídeo)', client:'Salty Way' },
+      { id:'e22', week:2, day:'Qui 02', format:'Brandfeed (Vídeo)', client:'Humora' },
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('fitfeed_week') || '{}'); } catch { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem('fitfeed_week', JSON.stringify(state));
+}
+
+let state = loadState();
+let currentWeek = 1;
+
+const WEEK_CONFIG = {
+  1: { label: 'Semana 1', dates: '22 – 28 Jun', dayOrder: ['Seg 22','Ter 23','Qua 24','Qui 25','Sex 26','Sáb 27','Dom 28'] },
+  2: { label: 'Semana 2', dates: '29 Jun – 3 Jul', dayOrder: ['Seg 29','Ter 30','Qua 01','Qui 02','Sex 03'] },
+};
+
+function switchWeek(n) {
+  currentWeek = n;
+  document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn-week${n}`).classList.add('active');
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function getTaskState(taskId) {
+  return state[taskId] || { step: -1 };
+}
+
+const ANA_PERSON = PEOPLE.find(p => p.id === 'ana');
+const ARTE_STEP_IDX = 3; // index de 'Arte' em STEPS_ANA
+
+function getDelegatedTasksForSarah() {
+  if (!ANA_PERSON) return [];
+  return ANA_PERSON.tasks
+    .filter(t => t.week === currentWeek && getTaskState(t.id).step >= ARTE_STEP_IDX)
+    .map(t => ({ ...t, delegated: true, sarahStepId: `sarah_delegated_${t.id}` }));
+}
+
+function setTaskStep(taskId, stepIdx) {
+  const cur = getTaskState(taskId).step;
+  state[taskId] = { step: cur === stepIdx ? stepIdx - 1 : stepIdx };
+  saveState(state);
+  render();
+}
+
+function groupByDay(tasks) {
+  const groups = {};
+  tasks.forEach(t => {
+    if (!groups[t.day]) groups[t.day] = [];
+    groups[t.day].push(t);
+  });
+  return groups;
+}
+
+function flagBadge(flag) {
+  if (!flag) return '';
+  if (flag === 'urgente') return '<span class="badge badge-urgente">Urgente</span>';
+  if (flag === 'atencao') return '<span class="badge badge-atencao">Atenção</span>';
+  if (flag === 'agendamento') return '<span class="badge badge-agendamento">Só agendar</span>';
+  return '';
+}
+
+function buildPersonCard(person) {
+  const weekTasks = person.tasks.filter(t => t.week === currentWeek);
+  const groups = groupByDay(weekTasks);
+  const dayOrder = WEEK_CONFIG[currentWeek].dayOrder;
+
+  const steps = person.steps;
+
+  // Progress
+  let total = weekTasks.length;
+  let done = weekTasks.filter(t => getTaskState(t.id).step >= steps.length - 1).length;
+  let pct = total ? Math.round((done / total) * 100) : 0;
+
+  let daysHtml = '';
+  dayOrder.forEach(day => {
+    if (!groups[day]) return;
+    daysHtml += `<div class="day-group"><div class="day-label">${day}</div>`;
+    groups[day].forEach(task => {
+      const ts = getTaskState(task.id);
+      let stepsHtml = steps.map((s, i) => {
+        let cls = 'step-btn';
+        if (ts.step === i) cls += ' active';
+        else if (ts.step > i) cls += ' done';
+        return `<button class="${cls}" onclick="setTaskStep('${task.id}', ${i})">${s}</button>`;
+      }).join('');
+
+      const isDone = ts.step >= steps.length - 1;
+      daysHtml += `
+        <div class="task-row" id="task-${task.id}">
+          <div class="task-top">
+            <div class="task-info">
+              <div class="task-format">${task.format}</div>
+              <div class="task-client">${task.client}</div>
+            </div>
+            <div class="task-badges">
+              ${isDone ? '<span class="badge badge-ok">✓ Agendado</span>' : flagBadge(task.flag)}
+            </div>
+          </div>
+          <div class="status-steps">${stepsHtml}</div>
+        </div>`;
+    });
+    daysHtml += '</div>';
+  });
+
+  const savedNote = (state[`note_${person.id}`] || '');
+
+  // ── Tarefas delegadas de Ana (só para Sarah) ──
+  let delegatedHtml = '';
+  if (person.id === 'sarah') {
+    const delegated = getDelegatedTasksForSarah();
+    if (delegated.length > 0) {
+      delegatedHtml = `<div class="delegated-section">
+        <div class="delegated-header">
+          <i data-lucide="arrow-right-circle" width="13" height="13"></i>
+          Recebido de Ana — Arte
+        </div>`;
+      delegated.forEach(task => {
+        const sid = task.sarahStepId;
+        const ts = getTaskState(sid);
+        const sarahArtSteps = ['Arte em produção','Validação Arte','Aprovado','Agendado/Publicado'];
+        const isDone = ts.step >= sarahArtSteps.length - 1;
+        const stepsHtml = sarahArtSteps.map((s, i) => {
+          let cls = 'step-btn';
+          if (ts.step === i) cls += ' active';
+          else if (ts.step > i) cls += ' done';
+          return `<button class="${cls}" onclick="setTaskStep('${sid}', ${i})">${s}</button>`;
+        }).join('');
+        delegatedHtml += `
+          <div class="task-row delegated-task">
+            <div class="task-top">
+              <div class="task-info">
+                <div class="task-format">${task.format} · ${task.day}</div>
+                <div class="task-client">${task.client}</div>
+              </div>
+              <div class="task-badges">
+                ${isDone ? '<span class="badge badge-ok">✓ Agendado</span>' : '<span class="badge badge-delegada">Arte</span>'}
+              </div>
+            </div>
+            <div class="status-steps">${stepsHtml}</div>
+          </div>`;
+      });
+      delegatedHtml += '</div>';
+    }
+  }
+
+  return `
+    <div class="person-card">
+      <div class="person-header">
+        <div class="person-avatar ${person.avatarClass}">${person.avatar}</div>
+        <div class="person-info">
+          <h2>${person.name}</h2>
+          <div class="person-role">${person.role}</div>
+        </div>
+        <span class="task-count">${done}/${total}</span>
+      </div>
+      <div class="progress-wrap" style="padding:12px 24px 0">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        <div class="progress-text">${pct}% concluído</div>
+      </div>
+      <div style="padding-bottom:8px;">${daysHtml}</div>
+      ${delegatedHtml}
+      <div class="notes-section">
+        <div class="notes-label">
+          <i data-lucide="message-square" width="13" height="13"></i>
+          Status para a gestora
+        </div>
+        <textarea
+          class="notes-input"
+          placeholder="Como está indo? Algum bloqueio, atraso ou observação para a gestora comercial..."
+          id="note-${person.id}"
+          onchange="saveNote('${person.id}')"
+        >${savedNote}</textarea>
+        <div style="display:flex;align-items:center;">
+          <button class="notes-save-btn" onclick="saveNote('${person.id}', true)">Salvar</button>
+          <span class="notes-saved" id="saved-${person.id}">Salvo ✓</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function saveNote(personId, showFeedback) {
+  const el = document.getElementById(`note-${personId}`);
+  if (!el) return;
+  state[`note_${personId}`] = el.value;
+  saveState(state);
+  if (showFeedback) {
+    const saved = document.getElementById(`saved-${personId}`);
+    if (saved) {
+      saved.classList.add('show');
+      setTimeout(() => saved.classList.remove('show'), 2000);
+    }
+  }
+}
+
+function updateSummary() {
+  let total = 0, done = 0, urgent = 0;
+  PEOPLE.forEach(p => {
+    p.tasks.filter(t => t.week === currentWeek).forEach(t => {
+      total++;
+      if (getTaskState(t.id).step >= p.steps.length - 1) done++;
+      if (t.flag === 'urgente') urgent++;
+    });
+  });
+  document.getElementById('total-tasks').textContent = total;
+  document.getElementById('done-tasks').textContent = done;
+  document.getElementById('urgent-tasks').textContent = urgent;
+}
+
+function toggleManagerEdit() {
+  const form = document.getElementById('manager-obs-form');
+  const display = document.getElementById('manager-obs-display');
+  const btn = document.getElementById('manager-edit-btn');
+  const input = document.getElementById('manager-obs-input');
+  const isEditing = form.style.display !== 'none';
+  if (isEditing) {
+    form.style.display = 'none';
+    display.style.display = '';
+    btn.innerHTML = '<i data-lucide="pencil" width="13" height="13"></i> Editar';
+  } else {
+    input.value = state['manager_obs'] || '';
+    form.style.display = 'flex';
+    display.style.display = 'none';
+    btn.innerHTML = '<i data-lucide="x" width="13" height="13"></i> Fechar';
+    input.focus();
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function cancelManagerEdit() {
+  document.getElementById('manager-obs-form').style.display = 'none';
+  document.getElementById('manager-obs-display').style.display = '';
+  const btn = document.getElementById('manager-edit-btn');
+  btn.innerHTML = '<i data-lucide="pencil" width="13" height="13"></i> Editar';
+  if (window.lucide) lucide.createIcons();
+}
+
+function saveManagerObs() {
+  const input = document.getElementById('manager-obs-input');
+  const text = input.value.trim();
+  state['manager_obs'] = text;
+  saveState(state);
+  const obsText = document.getElementById('manager-obs-text');
+  if (text) {
+    obsText.textContent = text;
+    obsText.classList.remove('manager-obs-placeholder');
+  } else {
+    obsText.textContent = 'Nenhuma observação ainda.';
+    obsText.classList.add('manager-obs-placeholder');
+  }
+  document.getElementById('manager-saved').classList.add('show');
+  setTimeout(() => document.getElementById('manager-saved').classList.remove('show'), 2000);
+  cancelManagerEdit();
+}
+
+function initManagerObs() {
+  const saved = state['manager_obs'] || '';
+  const obsText = document.getElementById('manager-obs-text');
+  if (obsText && saved) {
+    obsText.textContent = saved;
+    obsText.classList.remove('manager-obs-placeholder');
+  }
+}
+
+function render() {
+  const grid = document.getElementById('main-grid');
+  grid.innerHTML = PEOPLE.map(buildPersonCard).join('');
+  updateSummary();
+  initManagerObs();
+  if (window.lucide) lucide.createIcons();
+}
+
+render();
+</script>
+</body>
+</html>
